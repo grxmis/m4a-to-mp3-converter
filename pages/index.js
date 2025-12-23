@@ -82,7 +82,7 @@ export default function Converter() {
       }}>
         <h1 style={{ color: '#0a192f', marginBottom: '10px', fontWeight: '800' }}>M4A to MP3</h1>
         <p style={{ color: '#64748b', marginBottom: '30px', fontSize: '14px' }}>
-          By <a href="https://codeplaygraoundbymyserlis.blogspot.com" target="_blank" rel="noopener noreferrer" style={{ color: '#1976d2', textDecoration: 'none', fontWeight: 'bold' }}>CodePlayground</a>
+          By <a href="https://codeplaygroundbymyserlis.blogspot.com" target="_blank" rel="noopener noreferrer" style={{ color: '#1976d2', textDecoration: 'none', fontWeight: 'bold' }}>CodePlayground</a>
         </p>
         
         {!loaded ? (
