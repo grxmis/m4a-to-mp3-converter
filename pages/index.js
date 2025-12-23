@@ -168,7 +168,7 @@ export default function Converter() {
 
       {/* FOOTER */}
       <footer style={{ marginTop: '30px', color: '#94a3b8', fontSize: '13px', textAlign: 'center' }}>
-        <p>© 2024 Created for <a href="https://codeplaygraoundbymyserlis.blogspot.com" target="_blank" rel="noopener noreferrer" style={{ color: '#38bdf8', textDecoration: 'none' }}>codeplaygraoundbymyserlis.blogspot.com</a></p>
+        <p>© 2024 Created for <a href="https://codeplaygroundbymyserlis.blogspot.com" target="_blank" rel="noopener noreferrer" style={{ color: '#38bdf8', textDecoration: 'none' }}>codeplaygraoundbymyserlis.blogspot.com</a></p>
       </footer>
 
       <style jsx>{`
