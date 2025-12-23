@@ -60,9 +60,10 @@ export default function Converter() {
 
   return (
     <div style={{ 
-      backgroundColor: '#e3f2fd', // ΤΟ ΜΠΛΕ ΦΟΝΤΟ ΠΟΥ ΖΗΤΗΣΕΣ
+      backgroundColor: '#0a192f', 
       minHeight: '100vh', 
       display: 'flex', 
+      flexDirection: 'column',
       alignItems: 'center', 
       justifyContent: 'center', 
       fontFamily: 'sans-serif',
@@ -70,64 +71,93 @@ export default function Converter() {
       padding: '20px'
     }}>
       <div style={{ 
-        backgroundColor: 'white', 
+        backgroundColor: '#ffffff', 
         padding: '40px', 
-        borderRadius: '20px', 
-        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+        borderRadius: '24px', 
+        boxShadow: '0 20px 50px rgba(0,0,0,0.3)', 
         textAlign: 'center',
-        maxWidth: '500px',
-        width: '100%'
+        maxWidth: '450px',
+        width: '100%',
+        position: 'relative'
       }}>
-        <h1 style={{ color: '#0d47a1', marginBottom: '10px' }}>M4A to MP3</h1>
-        <p style={{ color: '#555', marginBottom: '30px' }}>Γρήγορη και ιδιωτική μετατροπή ήχου</p>
+        <h1 style={{ color: '#0a192f', marginBottom: '10px', fontWeight: '800' }}>M4A to MP3</h1>
+        <p style={{ color: '#64748b', marginBottom: '30px', fontSize: '14px' }}>
+          By <a href="https://codeplaygraoundbymyserlis.blogspot.com" target="_blank" rel="noopener noreferrer" style={{ color: '#1976d2', textDecoration: 'none', fontWeight: 'bold' }}>CodePlayground</a>
+        </p>
         
         {!loaded ? (
           <button onClick={load} disabled={loading} style={{ 
-            padding: '15px 30px', 
+            padding: '16px 32px', 
             fontSize: '16px', 
             cursor: 'pointer', 
-            borderRadius: '10px', 
+            borderRadius: '12px', 
             border: 'none', 
-            background: '#1976d2', 
+            background: '#0a192f', 
             color: 'white',
             fontWeight: 'bold'
           }}>
-            {loading ? 'Φόρτωση...' : 'Ενεργοποίηση'}
+            {loading ? 'Περιμένετε...' : 'Ενεργοποίηση Εφαρμογής'}
           </button>
         ) : (
           <div>
             {!outputUrl && !processing && (
-              <div style={{ border: '2px dashed #bbdefb', padding: '20px', borderRadius: '10px' }}>
+              <div style={{ 
+                border: '2px dashed #cbd5e1', 
+                padding: '30px 20px', 
+                borderRadius: '16px',
+                backgroundColor: '#f8fafc'
+              }}>
                 <input 
                   type="file" 
                   accept=".m4a" 
                   ref={fileInputRef}
                   onChange={(e) => e.target.files[0] && convert(e.target.files[0])} 
+                  style={{ cursor: 'pointer' }}
                 />
               </div>
             )}
 
             {processing && (
               <div style={{ margin: '20px' }}>
-                <div style={{ border: '4px solid #f3f3f3', borderTop: '4px solid #1976d2', borderRadius: '50%', width: '40px', height: '40px', animation: 'spin 1s linear infinite', margin: '0 auto 15px' }}></div>
-                <p>Μετατροπή: <strong>{fileName}</strong></p>
+                <div className="spinner"></div>
+                <p style={{ color: '#0a192f', fontWeight: '600' }}>Μετατροπή...</p>
               </div>
             )}
 
             {outputUrl && (
               <div style={{ marginTop: '10px' }}>
-                <h3 style={{ color: '#2e7d32' }}>Έτοιμο!</h3>
-                <audio src={outputUrl} controls style={{ width: '100%', marginBottom: '20px' }} />
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                <div style={{ padding: '15px', backgroundColor: '#f0fdf4', borderRadius: '12px', marginBottom: '20px' }}>
+                  <h3 style={{ color: '#166534', margin: '0 0 10px 0' }}>✓ Έτοιμο!</h3>
+                  <audio src={outputUrl} controls style={{ width: '100%' }} />
+                </div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <a 
                     href={outputUrl} 
                     download={fileName.replace('.m4a', '.mp3')} 
-                    style={{ padding: '12px 20px', background: '#2e7d32', color: 'white', textDecoration: 'none', borderRadius: '8px', fontWeight: 'bold' }}
+                    style={{ 
+                      padding: '14px', 
+                      background: '#166534', 
+                      color: 'white', 
+                      textDecoration: 'none', 
+                      borderRadius: '10px', 
+                      fontWeight: 'bold'
+                    }}
                   >
-                    Λήψη MP3
+                    Λήψη Αρχείου MP3
                   </a>
-                  <button onClick={resetConverter} style={{ padding: '12px 20px', background: '#757575', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
-                    Νέο Αρχείο
+                  <button 
+                    onClick={resetConverter} 
+                    style={{ 
+                      padding: '12px', 
+                      background: 'transparent', 
+                      color: '#64748b', 
+                      border: '1px solid #cbd5e1', 
+                      borderRadius: '10px', 
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Μετατροπή άλλου αρχείου
                   </button>
                 </div>
               </div>
@@ -136,7 +166,21 @@ export default function Converter() {
         )}
       </div>
 
+      {/* FOOTER */}
+      <footer style={{ marginTop: '30px', color: '#94a3b8', fontSize: '13px', textAlign: 'center' }}>
+        <p>© 2024 Created for <a href="https://codeplaygraoundbymyserlis.blogspot.com" target="_blank" rel="noopener noreferrer" style={{ color: '#38bdf8', textDecoration: 'none' }}>codeplaygraoundbymyserlis.blogspot.com</a></p>
+      </footer>
+
       <style jsx>{`
+        .spinner {
+          border: 4px solid #f1f5f9;
+          border-top: 4px solid #0a192f;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 15px;
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       `}</style>
     </div>
