@@ -1,96 +1,84 @@
 import { useState, useRef } from 'react';
 
 export default function AudioConverter() {
-  const [status, setStatus] = useState('idle'); // idle, loading, ready, error
+  const [loaded, setLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [outputUrl, setOutputUrl] = useState(null);
   const ffmpegRef = useRef(null);
 
   const load = async () => {
-    setStatus('loading');
+    setLoading(true);
     try {
-      const { createFFmpeg } = await import('@ffmpeg/ffmpeg');
+      const { FFmpeg } = await import('@ffmpeg/ffmpeg');
+      const { toBlobURL } = await import('@ffmpeg/util');
+      const ffmpeg = new FFmpeg();
       
-      // Ορίζουμε ρητά από πού θα κατέβει ο "κινητήρας"
-      const ffmpeg = createFFmpeg({ 
-        log: true,
-        corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
+      const baseURL = 'https://unpkg.com/@ffmpeg/core-dist@0.12.6/dist/umd';
+      
+      await ffmpeg.load({
+        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+        // Αυτό βοηθάει αν ο browser έχει θέμα μνήμης
+        classWorkerURL: await toBlobURL(`${baseURL}/ffmpeg-worker.js`, 'text/javascript'),
       });
-      
-      await ffmpeg.load();
+
       ffmpegRef.current = ffmpeg;
-      setStatus('ready');
+      setLoaded(true);
     } catch (err) {
-      console.error("FFmpeg Load Error:", err);
-      setStatus('error');
+      console.error(err);
+      alert("Αποτυχία μνήμης. Κλείστε άλλες καρτέλες στον browser και δοκιμάστε ξανά.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const convertToMp3 = async (file) => {
-    if (status !== 'ready') return;
+    if (!loaded) return;
     setProcessing(true);
-    setOutputUrl(null);
-    
     const ffmpeg = ffmpegRef.current;
     const { fetchFile } = await import('@ffmpeg/util');
 
     try {
-      ffmpeg.FS('writeFile', 'input.m4a', await fetchFile(file));
-
-      // Εντολή μετατροπής
-      await ffmpeg.run('-i', 'input.m4a', '-acodec', 'libmp3lame', '-b:a', '192k', 'output.mp3');
-
-      const data = ffmpeg.FS('readFile', 'output.mp3');
-      const url = URL.createObjectURL(new Blob([data.buffer], { type: 'audio/mp3' }));
+      await ffmpeg.writeFile('input.m4a', await fetchFile(file));
       
+      // Χρησιμοποιούμε πολύ απλές ρυθμίσεις για να μην κρασάρει
+      await ffmpeg.exec(['-i', 'input.m4a', '-vn', '-ab', '128k', 'output.mp3']);
+
+      const data = await ffmpeg.readFile('output.mp3');
+      const url = URL.createObjectURL(new Blob([data.buffer], { type: 'audio/mp3' }));
       setOutputUrl(url);
+      
+      // Καθαρισμός μνήμης
+      await ffmpeg.deleteFile('input.m4a');
+      await ffmpeg.deleteFile('output.mp3');
     } catch (err) {
-      console.error("Conversion Error:", err);
-      alert("Σφάλμα κατά τη μετατροπή.");
+      console.error(err);
+      alert("Η μετατροπή απέτυχε λόγω έλλειψης μνήμης.");
     } finally {
       setProcessing(false);
     }
   };
 
   return (
-    <div style={{ textAlign: 'center', padding: '50px', fontFamily: 'sans-serif' }}>
-      <h1>M4A to MP3 Converter</h1>
-      
-      {status === 'idle' && (
-        <button onClick={load} style={{ padding: '15px 30px', fontSize: '18px', cursor: 'pointer', background: '#0070f3', color: '#fff', border: 'none', borderRadius: '5px' }}>
-          Ενεργοποίηση Μετατροπέα
+    <div style={{ textAlign: 'center', padding: '40px', fontFamily: 'sans-serif' }}>
+      <h2>M4A to MP3 Converter</h2>
+      {!loaded ? (
+        <button onClick={load} disabled={loading} style={{ padding: '10px 20px' }}>
+          {loading ? 'Φόρτωση...' : 'Ενεργοποίηση'}
         </button>
-      )}
-
-      {status === 'loading' && <p>🔄 Φόρτωση κινητήρα FFmpeg... (παρακαλώ περιμένετε)</p>}
-      
-      {status === 'error' && (
-        <p style={{ color: 'red' }}>❌ Αποτυχία φόρτωσης. Δοκιμάστε να ανανεώσετε τη σελίδα ή ελέγξτε τη σύνδεσή σας.</p>
-      )}
-
-      {status === 'ready' && (
-        <div style={{ marginTop: '20px' }}>
-          <p style={{ color: 'green' }}>✅ Ο μετατροπέας είναι έτοιμος!</p>
-          <input 
-            type="file" 
-            accept=".m4a" 
-            onChange={(e) => e.target.files[0] && convertToMp3(e.target.files[0])} 
-            disabled={processing}
-            style={{ margin: '20px 0' }}
-          />
-          {processing && <p>⏳ Μετατροπή σε εξέλιξη... Μην κλείσετε το παράθυρο.</p>}
+      ) : (
+        <div>
+          <input type="file" accept=".m4a" onChange={(e) => e.target.files[0] && convertToMp3(e.target.files[0])} />
+          {processing && <p>Μετατροπή... παρακαλώ περιμένετε.</p>}
         </div>
       )}
-
       {outputUrl && (
-        <div style={{ marginTop: '40px', padding: '20px', background: '#f0f0f0', borderRadius: '10px' }}>
-          <h3>🎉 Έτοιμο!</h3>
-          <audio src={outputUrl} controls style={{ marginBottom: '15px' }} />
-          <br />
-          <a href={outputUrl} download="music.mp3">
-            <button style={{ padding: '10px 25px', background: '#28a745', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '5px' }}>
-              Λήψη MP3
-            </button>
+        <div style={{ marginTop: '20px' }}>
+          <audio src={outputUrl} controls />
+          <br/><br/>
+          <a href={outputUrl} download="audio.mp3" style={{ background: 'green', color: 'white', padding: '10px', borderRadius: '5px', textDecoration: 'none' }}>
+            Download MP3
           </a>
         </div>
       )}
